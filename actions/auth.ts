@@ -62,13 +62,15 @@ export const userSignUp = async (data: SignUpSchemaType) => {
         "Campos inválidos. Por favor, verifique os dados e tente novamente.",
     };
   }
-
-    const [commonPermission] = await db
-      .select()
-      .from(permissions)
-      .where(eq(permissions.name, "Common User"));
-
-  const { name, email, password } = validatedFields.data;
+  
+  const {
+    name,
+    email,
+    password,
+    dateOfBirth,
+    phone,
+    userType
+  } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
   const [existingUser] = await db
     .select()
@@ -81,16 +83,18 @@ export const userSignUp = async (data: SignUpSchemaType) => {
     };
   }
 
+  const [commonPermission] = await db
+    .select()
+    .from(permissions)
+    .where(eq(permissions.name, userType === 'athlete' ? 'Athlete' : 'Coach'));
+
   await db.insert(users).values({
     name,
     email,
     password: hashedPassword,
-    dateOfBirth: new Date().toISOString(),
+    dateOfBirth,
     permissionId: commonPermission.id,
-    isActive: 1,
-    isDeleted: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    phone
   });
 
   await userSignIn({
