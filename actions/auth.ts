@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { eq } from "drizzle-orm";
-import { signIn } from "@/lib/auth";
+import { signIn } from "@/auth";
 import {
   SignInSchema,
   SignInSchemaType,
@@ -11,7 +11,7 @@ import {
   SignUpSchemaType,
 } from "@/schemas";
 import { db } from "@/lib/db/db";
-import { users } from "@/lib/db/schema";
+import { users, permissions } from "@/lib/db/schema";
 
 /**
  * Realiza o login do usuário usando o provider "credentials".
@@ -63,6 +63,11 @@ export const userSignUp = async (data: SignUpSchemaType) => {
     };
   }
 
+    const [commonPermission] = await db
+      .select()
+      .from(permissions)
+      .where(eq(permissions.name, "Common User"));
+
   const { name, email, password } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
   const [existingUser] = await db
@@ -80,6 +85,12 @@ export const userSignUp = async (data: SignUpSchemaType) => {
     name,
     email,
     password: hashedPassword,
+    dateOfBirth: new Date().toISOString(),
+    permissionId: commonPermission.id,
+    isActive: 1,
+    isDeleted: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   await userSignIn({

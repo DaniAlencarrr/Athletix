@@ -53,7 +53,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { authConfig } from "@/lib/auth.config";
 import { SignInSchema } from "@/schemas";
-import { userService } from "../service/user.service";
+import { userService } from "./service/user.service";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
