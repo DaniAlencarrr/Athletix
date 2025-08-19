@@ -15,7 +15,7 @@ import { he } from "zod/v4/locales";
 export const permissions = pgTable('permissions', {
   id: uuid('id').defaultRandom().primaryKey(), 
   name: text('name').notNull(),
-  description: text('description'),
+  description: text('description').notNull(),
 })
 
 /* Tabela de Usuários (Users) */
@@ -24,14 +24,13 @@ export const users = pgTable('users', {
   name: text('name'),
   email: text('email').unique(),
   password: text('password'),
-  profile_picture: text('profile_picture'), 
-  dateOfBirth: timestamp('date_of_birth', { mode: 'string' }), // preenchar depois de criar o usuário
-  phone: text('phone'),
-  firtAccess: integer('first_access').default(1), // 1 = primeiro acesso, 0 = já acessou
+  profile_picture: text('profile_picture').notNull().default(''),
+  dateOfBirth: timestamp('date_of_birth', { mode: 'string' }).notNull(), // preenchar depois de criar o usuário
+  phone: text('phone').notNull().default(''),
   createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().$onUpdateFn(() => new Date().toISOString()),
   permissionId: uuid('permission_id')
-    .notNull()
+    .notNull() //  1 = admin, 2 = Athlete, 3 = Coach
     .references(() => permissions.id, { onDelete: 'set null' }), 
   description: text('description'),
   isActive: integer('is_active').default(1), 
@@ -103,7 +102,7 @@ export const sport = pgTable('sport', {
     nameIdx: index('sport_name_idx').on(sport.name),
 }));
 
-/* Tabela de Perfil de Saúde (healthProfile) */
+/* Tabela de Perfil de Saúde (healthProfile) */ // Validar antes de criar
 // export const healthProfile = pgTable('health_profile', {
 //   id: uuid('id').defaultRandom().primaryKey(),
 //   userId: uuid('user_id').notNull(),

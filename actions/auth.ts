@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { eq } from "drizzle-orm";
-import { signIn } from "@/auth";
+import { signIn } from "@/lib/auth";
 import {
   SignInSchema,
   SignInSchemaType,
