@@ -1,28 +1,12 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
-
 export default function DashboardPage() {
-  const { data: session } = useSession();
-  if (!session?.user) return null;
-
-  const user = session.user;
-
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Bem-vindo, {user.name}!</p>
-      <p>Seu ID de usuário é: {user.id}</p>
-      <Button
-        variant="ghost"
-        onClick={() => signOut({ callbackUrl: "/" })}
-        className="flex items-center gap-2"
-      >
-        <LogOut />
-        Sair
-      </Button>
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+        <div className="bg-muted/50 aspect-video rounded-xl" />
+        <div className="bg-muted/50 aspect-video rounded-xl" />
+        <div className="bg-muted/50 aspect-video rounded-xl" />
+      </div>
+      <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
     </div>
   );
 }
