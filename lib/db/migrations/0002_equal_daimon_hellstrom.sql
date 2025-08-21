@@ -1,1 +1,0 @@
-ALTER TABLE "permissions" ALTER COLUMN "description" SET NOT NULL;

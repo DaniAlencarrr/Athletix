@@ -39,11 +39,6 @@ export function RegisterForm({
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
 
-  const userTypes = [
-    { label: "Atleta", value: "athlete" },
-    { label: "Treinador", value: "coach" },
-  ];
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -58,9 +53,6 @@ export function RegisterForm({
       name: "",
       email: "",
       password: "",
-      dateOfBirth: "",
-      phone: "",
-      userType: "athlete",
     },
   });
 
@@ -71,11 +63,11 @@ export function RegisterForm({
     }
   };
 
-  // const handleGoogleSignIn = () => {
-  //   startTransition(() => {
-  //     signInWithGoogle();
-  //   });
-  // };
+  const handleGoogleSignIn = () => {
+    startTransition(() => {
+      signInWithGoogle();
+    });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -128,7 +120,6 @@ export function RegisterForm({
             </>
           )}
         </CardHeader>
-
         <CardContent>
           {isLoading ? (
             <div className="space-y-6">
@@ -165,7 +156,7 @@ export function RegisterForm({
                 className="space-y-4"
               >
                 <div className="grid gap-6">
-                  {/* <motion.div
+                  <motion.div
                     className="flex flex-col gap-4"
                     variants={itemVariants}
                   >
@@ -192,54 +183,16 @@ export function RegisterForm({
                         Faça login com o Google
                       </Button>
                     </motion.div>
-                  </motion.div> */}
-
-                  {/* Formulário */}
+                  </motion.div>
+                  <motion.div
+                    className="relative text-center text-xs after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border"
+                    variants={itemVariants}
+                  >
+                    <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                      Ou preencha o formulário
+                    </span>
+                  </motion.div>
                   <motion.div className="grid gap-5" variants={itemVariants}>
-                    {/* Seleção de Tipo de Usuário */}
-                    <motion.div variants={itemVariants}>
-                      <FormField
-                        control={form.control}
-                        name="userType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-normal text-muted-foreground">
-                              Tipo de Usuário
-                            </FormLabel>
-                            <div className="flex flex-wrap gap-2">
-                              {userTypes.map((option) => (
-                                <Button
-                                  key={option.value}
-                                  type="button"
-                                  variant={field.value === option.value ? "default" : "outline"}
-                                  onClick={() => field.onChange(option.value)}
-                                  className={`rounded-full transition ${field.value === option.value
-                                    ? "bg-blue-600 text-white border-blue-600"
-                                    : "bg-background/50 border-muted-foreground/20 text-muted-foreground hover:bg-muted/30"
-                                    }`}
-                                >
-                                  {option.label}
-                                </Button>
-                              ))}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </motion.div>
-
-                    {/* Separador */}
-                    <motion.div
-                      className="relative text-center text-xs after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border"
-                      variants={itemVariants}
-                    >
-                      <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                        Preencha o formulário
-                      </span>
-                    </motion.div>
-
-
-                    {/* Campos */}
                     <motion.div variants={itemVariants}>
                       <FormField
                         control={form.control}
@@ -264,62 +217,6 @@ export function RegisterForm({
                         )}
                       />
                     </motion.div>
-
-                    {/* Telefone */}
-                    <motion.div variants={itemVariants}>
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-normal text-muted-foreground">
-                              Telefone
-                            </FormLabel>
-                            <FormControl>
-                              <motion.div whileFocus={{ scale: 1.01 }}>
-                                <Input
-                                  {...field}
-                                  disabled={isPending}
-                                  placeholder="XX-XXXXX-XXXX"
-                                  className="rounded-full border-muted-foreground/20 bg-background/50 backdrop-blur-sm"
-                                />
-                              </motion.div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>     
-                        )}
-                      />
-                    </motion.div>
-
-
-                    {/* Data de nascimento */}
-                    <motion.div variants={itemVariants}>
-                      <FormField
-                        control={form.control}
-                        name="dateOfBirth"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-normal text-muted-foreground">
-                              Data de Nascimento
-                            </FormLabel>
-                            <FormControl>
-                              <motion.div whileFocus={{ scale: 1.01 }}>
-                                <Input
-                                  {...field}
-                                  disabled={isPending}
-                                  placeholder="DD/MM/AAAA"
-                                  className="rounded-full border-muted-foreground/20 bg-background/50 backdrop-blur-sm"
-                                />
-                              </motion.div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </motion.div>
-
-
-
                     <motion.div variants={itemVariants}>
                       <FormField
                         control={form.control}
@@ -345,7 +242,6 @@ export function RegisterForm({
                         )}
                       />
                     </motion.div>
-
                     <motion.div variants={itemVariants}>
                       <FormField
                         control={form.control}
@@ -371,8 +267,6 @@ export function RegisterForm({
                         )}
                       />
                     </motion.div>
-
-                    {/* Botão de enviar */}
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -390,7 +284,6 @@ export function RegisterForm({
                       </Button>
                     </motion.div>
                   </motion.div>
-
                   <motion.div
                     className="text-center text-xs text-muted-foreground"
                     variants={itemVariants}
@@ -411,7 +304,6 @@ export function RegisterForm({
           )}
         </CardContent>
       </Card>
-
       <motion.div
         className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary"
         variants={itemVariants}
