@@ -1,94 +1,61 @@
-// import NextAuth from "next-auth";
-// import Credentials from "next-auth/providers/credentials";
-// import Google from "next-auth/providers/google";
-// import bcrypt from "bcryptjs";
-// import { authConfig } from "@/lib/auth.config";
-// import { SignInSchema } from "@/schemas";
-// import { userService } from "./service/user.service";
-
-// export const { handlers, auth, signIn, signOut } = NextAuth({
-//   ...authConfig,
-//   session: { strategy: "jwt" },
-//   providers: [
-//     Credentials({
-//       authorize: async (credentials) => {
-//         const validated = await SignInSchema.safeParseAsync(credentials);
-//         if (!validated.success) return null;
-
-//         const { email, password } = validated.data;
-//         const user = await userService.findByEmail(email);
-//         if (!user || !user.password) return null;
-
-//         const passwordsMatch = await bcrypt.compare(password, user.password);
-//         if (!passwordsMatch) return null;
-
-//         const { password: _, ...userWithoutPassword } = user;
-//         return userWithoutPassword;
-//       },
-//     }),
-//     Google,
-//   ],
-//   callbacks: {
-//     async session({ session, token }) {
-//       if (token.sub) session.user.id = token.sub;
-//       return session;
-//     },
-//     async jwt({ token, user }) {
-//       if (user) token.sub = user.id;
-//       return token;
-//     },
-//   },
-// });
-
-
-
-
-
-import NextAuth from "next-auth";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import { authConfig } from "@/auth.config";
-import { db } from "@/lib/db/db";
-import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
+import { db } from "@/lib/db";
 import { SignInSchema } from "@/schemas";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...authConfig,
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  pages: {
+    signIn: "/login",
+  },
+  adapter: PrismaAdapter(db),
   session: {
     strategy: "jwt",
   },
   providers: [
-    ...authConfig.providers,
     Credentials({
+      credentials: {
+        email: {},
+        password: {},
+      },
       authorize: async (credentials) => {
-        const validatedFields = await SignInSchema.safeParseAsync(credentials);
-        if (!validatedFields.success) return null;
+        const { email, password } = await SignInSchema.parseAsync(credentials);
 
-        const { email, password } = validatedFields.data;
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email));
+        const user = await db.user.findUnique({
+          where: {
+            email,
+          },
+        });
 
-        if (!user || !user.password) return null;
-
-        const passwordsMatch = await bcrypt.compare(password, user.password);
-        if (passwordsMatch) {
-          const { password: _, ...userWithoutPassword } = user;
-          return userWithoutPassword;
+        if (!user) {
+          throw new Error("Usuário não encontrado");
         }
-        return null;
+
+        const isValid = bcrypt.compareSync(password, user.password!);
+
+        if (!isValid) {
+          throw new Error("Senha inválida");
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
       },
     }),
     Google,
   ],
+  callbacks: {
+    session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+  },
+  debug: process.env.NODE_ENV === "development",
 });

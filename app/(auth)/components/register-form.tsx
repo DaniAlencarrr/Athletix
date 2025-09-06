@@ -5,7 +5,7 @@ import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { userSignUp } from "@/actions/auth";
+import { register } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -31,6 +31,7 @@ import { motion, HTMLMotionProps } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export function RegisterForm({
   className,
@@ -56,11 +57,31 @@ export function RegisterForm({
     },
   });
 
-  const onSubmit = async (values: SignUpSchemaType) => {
-    const res = await userSignUp(values);
-    if (res && "error" in res) {
-      toast.error(res.error);
-    }
+  const onSubmit = (values: SignUpSchemaType) => {
+    startTransition(() => {
+      register(values)
+        .then(async (data) => {
+          if (data?.error) {
+            toast.error(data.error);
+            return;
+          }
+          if (data?.success) {
+            toast.success(data.success);
+            const signInResponse = await signIn("credentials", {
+              email: values.email,
+              password: values.password,
+              redirect: false,
+            });
+
+            if (signInResponse?.ok && !signInResponse.error) {
+              window.location.href = "/dashboard";
+            } else {
+              toast.error("Falha ao fazer login após o registro.");
+            }
+          }
+        })
+        .catch(() => toast.error("Ocorreu um erro inesperado no registro."));
+    });
   };
 
   const handleGoogleSignIn = () => {

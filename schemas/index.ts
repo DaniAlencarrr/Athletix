@@ -1,6 +1,5 @@
 import * as zod from "zod";
 
-
 export const SignInSchema = zod.object({
   email: zod.string().email({
     message: "Endereço de e-mail inválido",

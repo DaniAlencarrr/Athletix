@@ -4,7 +4,6 @@ import type React from "react";
 import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { userSignIn } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -31,11 +30,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { signInWithGoogle } from "@/actions/social-auth";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div"> & HTMLMotionProps<"div">) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,11 +57,21 @@ export function LoginForm({
     },
   });
 
-  const onSubmit = async (values: SignInSchemaType) => {
-    const res = await userSignIn(values);
-    if (res && "error" in res) {
-      toast.error(res.error);
-    }
+  const onSubmit = (values: SignInSchemaType) => {
+    startTransition(async () => {
+      const res = await signIn("credentials", {
+        ...values,
+        redirect: false,
+      });
+      if (res?.ok) {
+        toast.success("Login realizado com sucesso!");
+        router.push("/dashboard");
+      } else {
+        toast.error(
+          res?.error || "Credenciais inválidas. Verifique seu e-mail e senha."
+        );
+      }
+    });
   };
 
   const handleGoogleSignIn = () => {
