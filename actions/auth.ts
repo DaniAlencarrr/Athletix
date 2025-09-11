@@ -1,11 +1,16 @@
 "use server";
 
-import bcrypt from "bcryptjs";
+
+// import bcrypt from "bcryptjs"; // Biblioteca para hashing de senhas
+import { encryptPasswordForTCC } from '../utils/vigenereCipher'; // Funções de criptografia e descriptografia Manual
 import { SignUpSchema, SignUpSchemaType } from "@/schemas";
 import { db } from "@/lib/db";
+import { KEY } from '@/types/key';
 
 export const register = async (data: SignUpSchemaType) => {
   const validatedFields = SignUpSchema.safeParse(data);
+
+  console.log("Validated Fields:", validatedFields);
 
   if (!validatedFields.success) {
     return { error: "Campos inválados!" };
@@ -18,8 +23,12 @@ export const register = async (data: SignUpSchemaType) => {
     return { error: "Este e-mail já está em uso." };
   }
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+ // Usado somente para apresenteação do TCC
+  const encryptionKey = process.env.ENCRYPTION_KEY || KEY;
+  const hashedPassword = encryptPasswordForTCC(password, encryptionKey);
+
+  // const salt = await bcrypt.genSalt(10);
+  // const hashedPassword = await bcrypt.hash(password, salt);
 
   await db.user.create({
     data: {

@@ -10,28 +10,15 @@ export const SignInSchema = zod.object({
 });
 
 export const SignUpSchema = zod.object({
-  userType: zod.enum(["athlete", "coach"], {
-    error: "Tipo de usuário inválido",
-  }),
-  name: zod.string().min(10, {
-    message: "O nome deve ter pelo menos 10 caracteres",
-  }),
-  dateOfBirth: zod.string().refine((value) => {
-    const date = new Date(value);
-    return !isNaN(date.getTime()) && date <= new Date();
-  }, {
-    message: "Data de nascimento inválida",
-  }),
-  phone: zod.string().min(10, {
-    message: "O telefone deve ter pelo menos 10 dígitos",
+  name: zod.string().min(1, {
+    message: "O nome é obrigatório.",
   }),
   email: zod.string().email({
-    message: "Endereço de e-mail inválido",
+    message: "Por favor, insira um email válido.",
   }),
   password: zod.string().min(8, {
-    message: "A senha deve ter pelo menos 8 caracteres",
-  })
+    message: "A senha deve ter no mínimo 8 caracteres.",
+  }),
 });
-
 export type SignInSchemaType = zod.infer<typeof SignInSchema>;
 export type SignUpSchemaType = zod.infer<typeof SignUpSchema>;

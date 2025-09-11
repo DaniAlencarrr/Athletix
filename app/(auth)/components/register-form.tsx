@@ -74,7 +74,7 @@ export function RegisterForm({
             });
 
             if (signInResponse?.ok && !signInResponse.error) {
-              window.location.href = "/dashboard";
+              window.location.href = "/onboarding";
             } else {
               toast.error("Falha ao fazer login após o registro.");
             }

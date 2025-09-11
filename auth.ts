@@ -1,10 +1,12 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import bcrypt from "bcryptjs";
+// import bcrypt from "bcryptjs";
+import { decryptPasswordForTCC } from "./utils/vigenereCipher";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { db } from "@/lib/db";
 import { SignInSchema } from "@/schemas";
+import { KEY } from "./types/key";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
@@ -29,22 +31,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
 
-        if (!user) {
-          throw new Error("Usuário não encontrado");
+      if (!user || !user.password) {
+          return null;
+        }
+        
+        // const isValid = bcrypt.compareSync(password, user.password!);
+
+        const encryptionKey = process.env.ENCRYPTION_KEY || KEY;
+        const decryptedPassword = decryptPasswordForTCC(user.password, encryptionKey);
+
+        if (decryptedPassword === password) {
+          return user;
         }
 
-        const isValid = bcrypt.compareSync(password, user.password!);
-
-        if (!isValid) {
-          throw new Error("Senha inválida");
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-        };
+        return null;
       },
     }),
     Google,
