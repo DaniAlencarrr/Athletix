@@ -63,13 +63,23 @@ export function LoginForm({
         ...values,
         redirect: false,
       });
-      if (res?.ok) {
-        toast.success("Login realizado com sucesso!");
-        router.push("/dashboard");
-      } else {
-        toast.error(
-          res?.error || "Credenciais inválidas. Verifique seu e-mail e senha."
-        );
+      // if (res?.ok) {
+      //   router.push("/dashboard");
+      //   toast.success("Login realizado com sucesso!");
+      // } else {
+      //   toast.error(
+      //     res?.error || "Credenciais inválidas. Verifique seu e-mail e senha."
+      //   );
+      // }
+      try {
+        if (res?.error) {
+          toast.error("Senha/usuário inválidos.");
+        } else {
+          toast.success("Login realizado com sucesso!");
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        toast.error("Ocorreu um erro inesperado. Tente novamente.");
       }
     });
   };
