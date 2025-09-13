@@ -13,7 +13,7 @@ interface CoachData extends BaseFormData {
   userType: "coach";
   experience: string;
   hourlyRate: number;
-  certifications?: string; // Opcional
+  certifications: string;
 }
 
 // Tipo específico para Atleta

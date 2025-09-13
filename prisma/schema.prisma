@@ -7,6 +7,12 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+    Admin
+    Atleta
+    Treinador
+}
+
 model Account {
     id                String  @id @default(cuid())
     userId            String  @map("user_id")
@@ -44,10 +50,54 @@ model User {
     emailVerified DateTime? @map("email_verified")
     image         String?
     password      String?
+    role          UserRole?
+    onboardingCompleted Boolean @default(false)
+    birthDate     DateTime?
+    bio           String?
     accounts      Account[]
     sessions      Session[]
+    // Relacionamentos com tabelas específicas
+    coach         Coach?
+    athlete       Athlete?
+    address       Address?
 
     @@map("users")
+}
+
+model Coach {
+    id             String  @id @default(cuid())
+    userId         String  @unique @map("user_id")
+    experience     String
+    hourlyRate     Float
+    certifications String
+    user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("coaches")
+}
+
+model Athlete {
+    id            String  @id @default(cuid())
+    userId        String  @unique @map("user_id")
+    sport         String
+    height        Int
+    weight        Float
+    injuryHistory String?
+    user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("athletes")
+}
+
+model Address {
+    id        String  @id @default(cuid())
+    userId    String  @unique @map("user_id")
+    street    String
+    city      String
+    state     String
+    zipCode   String
+    country   String
+    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("addresses")
 }
 
 model VerificationToken {
