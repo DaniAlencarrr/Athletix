@@ -23,7 +23,26 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
+type CoachData = {
+  id: string;
+  name: string | null;
+  image: string | null;
+  email: string | null;
+  coach: {
+    rating: number | null;
+    title: string | null;
+    experience: string;
+    certifications: string;
+    coachedProfessionalAthletes: number | null;
+    careerStartDate: string | null;
+  } | null;
+  address: {
+    city: string;
+    state: string;
+  } | null;
+};
 
 const coachPlans = [
   {
@@ -53,11 +72,47 @@ const coachPlans = [
 
 export default function CoachPage() {
   const params = useParams();
-  const coach = COACHES.find((c) => c.slug === params.slug);
+  const slug = params.slug as string;
+  const [coach, setCoach] = useState<CoachData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (slug) {
+      const fetchCoachData = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch(`/api/coaches?name=${slug}`);
+          if (!response.ok) {
+            throw new Error("Treinador não encontrado");
+          }
+          const data = await response.json();
+          setCoach(data);
+        } catch (error) {
+          console.error(error);
+          setCoach(null);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchCoachData();
+    }
+  }, [slug]);
+
+  if (isLoading) {
+    return <div className="h-screen flex items-center justify-center">Carregando perfil...</div>;
+  }
 
   if (!coach) {
     notFound();
   }
+
+  const calculateExperience = (startDate: string | null | undefined): string => {
+    if (!startDate) return "Experiência não informada";
+    const startYear = new Date(startDate).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const years = currentYear - startYear;
+    return `${years}+ anos de carreira`;
+  };
 
   return (
     // Adicionado padding no topo para afastar o conteúdo da Navbar fixa
@@ -91,7 +146,7 @@ export default function CoachPage() {
                     {/* Imagem */}
                     <div className="relative shrink-0">
                       <Image
-                        src={coach.image}
+                        src={coach.image || "/images/default-avatar.png"}
                         alt={`Foto de ${coach.name}`}
                         width={180}
                         height={180}
@@ -99,7 +154,7 @@ export default function CoachPage() {
                       />
                       <Badge className="absolute bottom-3 right-3 bg-amber-400 text-black shadow-md px-3 py-1 text-sm font-bold">
                         <Star className="w-4 h-4 mr-1.5 fill-current" />
-                        {coach.rating}
+                        {coach.coach?.rating?.toFixed(1) || "N/A"}
                       </Badge>
                     </div>
 
@@ -109,11 +164,11 @@ export default function CoachPage() {
                         {coach.name}
                       </h1>
                       <p className="text-xl text-primary font-medium mt-2">
-                        {coach.specialty}
+                        {coach.coach?.title || "Especialista"}
                       </p>
                       <div className="flex items-center justify-center sm:justify-start text-muted-foreground mt-4">
                         <MapPin className="w-4 h-4 mr-2 shrink-0" />
-                        <span>{coach.location}</span>
+                        <span>{coach.address ? `${coach.address.city}, ${coach.address.state}` : 'Local não informado'}</span>
                       </div>
                     </div>
                   </div>
@@ -127,7 +182,7 @@ export default function CoachPage() {
                       Filosofia de Treino
                     </h2>
                     <p className="text-muted-foreground leading-loose">
-                      {coach.description}
+                      {coach.coach?.experience || "Nenhuma descrição disponível."}
                     </p>
                   </div>
 
@@ -140,19 +195,19 @@ export default function CoachPage() {
                         <div className="bg-primary/10 p-3 rounded-full">
                           <Trophy className="w-6 h-6 text-primary" />
                         </div>
-                        <span>{coach.achievements}</span>
+                        {coach.coach?.experience || "Nenhuma descrição disponível."}
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="bg-primary/10 p-3 rounded-full">
                           <Users className="w-6 h-6 text-primary" />
                         </div>
-                        <span>{coach.players} atletas profissionais</span>
+                        <span>{coach.coach?.coachedProfessionalAthletes || 0} atletas profissionais</span>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="bg-primary/10 p-3 rounded-full">
                           <Calendar className="w-6 h-6 text-primary" />
                         </div>
-                        <span>{coach.experience} de carreira</span>
+                        <span>{calculateExperience(coach.coach?.careerStartDate)}</span>
                       </div>
                     </div>
                   </div>

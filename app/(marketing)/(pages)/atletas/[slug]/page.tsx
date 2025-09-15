@@ -5,7 +5,6 @@ import MaxWidthWrapper from "@/components/global/max-width-wrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PLAYERS } from "@/utils";
 import {
   ArrowLeft,
   Briefcase,
@@ -22,10 +21,61 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
+import { calculateAge } from "@/utils/ageUtils";
+import { useEffect, useState } from "react";
+
+type AthleteData = {
+  id: string;
+  name: string | null;
+  image: string | null;
+  bio: string | null;
+  birthDate: string | null;
+  email: string | null;
+  athlete: {
+    level: string | null;
+    position: string | null;
+    gamesPlayed: number | null;
+    goals: number | null;
+    height: number;
+    weight: number;
+  } | null;
+  address: {
+    city: string;
+    state: string;
+  } | null;
+};
 
 export default function AthletePage() {
   const params = useParams();
-  const athlete = PLAYERS.find((p) => p.slug === params.slug);
+  const slug = params.slug as string;
+  const [athlete, setAthlete] = useState<AthleteData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (slug) {
+      const fetchAthleteData = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch(`/api/athletes?name=${slug}`);
+          if (!response.ok) {
+            throw new Error("Atleta não encontrado");
+          }
+          const data = await response.json();
+          setAthlete(data);
+        } catch (error) {
+          console.error(error);
+          setAthlete(null);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchAthleteData();
+    }
+  }, [slug]);
+
+  if (isLoading) {
+    return <div className="h-screen flex items-center justify-center">Carregando perfil...</div>;
+  }
 
   if (!athlete) {
     notFound();
@@ -61,7 +111,7 @@ export default function AthletePage() {
                   <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
                     <div className="relative shrink-0">
                       <Image
-                        src={athlete.image}
+                        src={athlete.image || "/images/default-avatar.png"}
                         alt={`Foto de ${athlete.name}`}
                         width={180}
                         height={180}
@@ -71,7 +121,7 @@ export default function AthletePage() {
                         variant="secondary"
                         className="absolute bottom-3 right-0 shadow-md px-3 py-1 text-sm font-bold"
                       >
-                        {athlete.level}
+                        {athlete.athlete?.level || "N/A"}
                       </Badge>
                     </div>
                     <div className="flex flex-col justify-center pt-2 text-center sm:text-left">
@@ -79,16 +129,16 @@ export default function AthletePage() {
                         {athlete.name}
                       </h1>
                       <p className="text-xl text-primary font-medium mt-2">
-                        {athlete.position}
+                        {athlete.athlete?.position || "Posição não informada"}
                       </p>
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2 text-muted-foreground mt-4">
                         <div className="flex items-center">
                           <MapPin className="w-4 h-4 mr-2 shrink-0" />
-                          <span>{athlete.location}</span>
+                          <span>{athlete.address ? `${athlete.address.city}, ${athlete.address.state}` : 'Local não informado'}</span>
                         </div>
                         <div className="flex items-center">
                           <Cake className="w-4 h-4 mr-2 shrink-0" />
-                          <span>{athlete.age} anos</span>
+                          <span>{athlete.birthDate ? `${calculateAge(athlete.birthDate)} anos` : 'Idade não informada'}</span>
                         </div>
                       </div>
                     </div>
@@ -105,28 +155,28 @@ export default function AthletePage() {
                       <div className="text-center bg-muted/30 p-4 rounded-xl">
                         <ShieldCheck className="w-8 h-8 mx-auto text-primary mb-2" />
                         <p className="text-3xl font-bold text-foreground">
-                          {athlete.matches}
+                          {athlete.athlete?.gamesPlayed || 0}
                         </p>
                         <p className="text-sm text-muted-foreground">Jogos</p>
                       </div>
                       <div className="text-center bg-muted/30 p-4 rounded-xl">
                         <Target className="w-8 h-8 mx-auto text-primary mb-2" />
                         <p className="text-3xl font-bold text-foreground">
-                          {athlete.goals}
+                          {athlete.athlete?.goals || 0}
                         </p>
-                        <p className="text-sm text-muted-foreground">Gols</p>
+                        <p className="text-sm text-muted-foreground">Pontuação</p>
                       </div>
                       <div className="text-center bg-muted/30 p-4 rounded-xl">
                         <PersonStanding className="w-8 h-8 mx-auto text-primary mb-2" />
                         <p className="text-3xl font-bold text-foreground">
-                          {athlete.height}
+                          {athlete.athlete ? `${(athlete.athlete.height / 100).toFixed(2)}m` : 'N/A'}
                         </p>
                         <p className="text-sm text-muted-foreground">Altura</p>
                       </div>
                       <div className="text-center bg-muted/30 p-4 rounded-xl">
                         <Scale className="w-8 h-8 mx-auto text-primary mb-2" />
                         <p className="text-3xl font-bold text-foreground">
-                          {athlete.weight}
+                          {athlete.athlete ? `${athlete.athlete.weight}kg` : 'N/A'}
                         </p>
                         <p className="text-sm text-muted-foreground">Peso</p>
                       </div>
@@ -139,7 +189,7 @@ export default function AthletePage() {
                       Sobre
                     </h2>
                     <p className="text-muted-foreground leading-loose">
-                      {athlete.description}
+                      {athlete.bio || "Nenhuma biografia disponível."}
                     </p>
                   </div>
                 </CardContent>

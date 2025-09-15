@@ -65,27 +65,39 @@ model User {
 }
 
 model Coach {
-    id             String  @id @default(cuid())
-    userId         String  @unique @map("user_id")
-    experience     String
-    hourlyRate     Float
-    certifications String
-    user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String  @id @default(cuid())
+  userId         String  @unique @map("user_id")
+  experience     String
+  hourlyRate     Float
+  certifications String  
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@map("coaches")
+  title                   String? 
+  rating                  Float?
+  careerStartDate         DateTime?
+  stateTitles             Int?     @default(0)
+  coachedProfessionalAthletes Int? @default(0)
+
+  @@map("coaches")
 }
+
 
 model Athlete {
-    id            String  @id @default(cuid())
-    userId        String  @unique @map("user_id")
-    sport         String
-    height        Int
-    weight        Float
-    injuryHistory String?
-    user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@map("athletes")
+  id            String  @id @default(cuid())
+  userId        String  @unique @map("user_id")
+  sport         String
+  height        Int     // Altura em centímetros
+  weight        Float
+  injuryHistory String?
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position      String?
+  level         String? 
+  gamesPlayed   Int?    @default(0) 
+  goals         Int?    @default(0)
+  
+  @@map("athletes")
 }
+
 
 model Address {
     id        String  @id @default(cuid())

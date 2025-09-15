@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import MagicBadge from "@/components/ui/magic-badge";
 import Particles from "@/components/ui/particles";
-import { COACHES, FAQS, PLAYERS } from "@/utils";
+import { FAQS } from "@/utils";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -27,8 +27,73 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { calculateAge } from "@/utils/ageUtils";
+
+type AthleteData = {
+  id: string;
+  name: string | null;
+  image: string | null;
+  birthDate: string | null;
+  athlete: {
+    position: string | null;
+    level: string | null;
+    height: number;
+    weight: number;
+    goals: number | null;
+    gamesPlayed: number | null;
+  } | null;
+  address: {
+    city: string;
+    state: string;
+  } | null;
+};
+
+type CoachData = {
+  id: string;
+  name: string | null;
+  image: string | null;
+  coach: {
+    title: string | null;
+    rating: number | null;
+    certifications: string | null;
+    coachedProfessionalAthletes: number | null;
+    careerStartDate: string | null;
+  } | null;
+  address: {
+    city: string;
+    state: string;
+  } | null;
+};
 
 export default function HomePage() {
+  const [athletes, setAthletes] = useState<AthleteData[]>([]);
+  const [coaches, setCoaches] = useState<CoachData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [athletesRes, coachesRes] = await Promise.all([
+          fetch("/api/athletes"),
+          fetch("/api/coaches"),
+        ]);
+
+        const athletesData = await athletesRes.json();
+        const coachesData = await coachesRes.json();
+
+        setAthletes(athletesData);
+        setCoaches(coachesData);
+      } catch (error) {
+        console.error("Falha ao buscar dados da API:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const heroVideos = [
     "/videos/futebol.mp4",
     "/videos/ciclismo.mp4",
@@ -76,6 +141,14 @@ export default function HomePage() {
       default:
         return "outline";
     }
+  };
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-");
   };
 
   return (
@@ -177,105 +250,82 @@ export default function HomePage() {
 
       {/* Treinadores */}
       <MaxWidthWrapper className="py-10">
-        <div
-          id="treinadores"
-          className="relative flex flex-col items-center justify-center w-full py-20"
-        >
-          <AnimationContainer>
-            <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-              <MagicBadge title="Treinadores" />
-              <h2 className="text-2xl md:text-4xl lg:text-5xl font-heading font-medium !leading-snug mt-6">
-                Descubra nossas principais <br />
-                <span className="font-subheading italic">treinadores</span>
-              </h2>
-              <p className="text-base md:text-lg text-center text-accent-foreground/80 mt-6">
-                Conecte-se com profissionais experientes e certificados que
-                podem levar sua carreira ao próximo nível
-              </p>
-            </div>
-          </AnimationContainer>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 w-full">
-            {COACHES.slice(0, 6).map((coach, index) => (
-              <motion.div
-                key={coach.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="flex flex-col items-center text-center p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-500 bg-card border-none">
-                  <div className="relative mb-6">
-                    <Image
-                      src={coach.image || "/placeholder.svg"}
-                      alt={coach.name}
-                      width={120}
-                      height={120}
-                      className="rounded-full object-cover border-4 border-primary/20 hover:border-primary transition-colors duration-300"
-                    />
-                    <Badge className="absolute bottom-0 right-0 bg-primary text-primary-foreground shadow-md px-2 py-1 rounded-full text-xs font-bold">
-                      <Star className="w-3 h-3 mr-1 fill-current" />
-                      {coach.rating}
-                    </Badge>
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-1">
-                    {coach.name}
-                  </h3>
-                  <p className="text-md text-primary font-semibold mb-4">
-                    {coach.specialty}
-                  </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 w-full">
+          {coaches.slice(0, 6).map((coach, index) => (
+            <motion.div
+              key={coach.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Card className="flex flex-col items-center text-center p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-500 bg-card border-none">
+                <div className="relative mb-6">
+                  <Image
+                    src={coach.image || "/images/default-avatar.png"}
+                    alt={coach.name || "Treinador"}
+                    width={120}
+                    height={120}
+                    className="rounded-full object-cover border-4 border-primary/20 hover:border-primary transition-colors duration-300"
+                  />
+                  <Badge className="absolute bottom-0 right-0 bg-primary text-primary-foreground shadow-md px-2 py-1 rounded-full text-xs font-bold">
+                    <Star className="w-3 h-3 mr-1 fill-current" />
+                    {coach.coach?.rating || "N/A"}
+                  </Badge>
+                </div>
+                <h3 className="text-2xl font-bold text-foreground mb-1">
+                  {coach.name}
+                </h3>
+                <p className="text-md text-primary font-semibold mb-4">
+                  {coach.coach?.title || "Especialista"}
+                </p>
 
-                  <div className="w-full text-left space-y-2 text-muted-foreground">
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-3 text-primary shrink-0" />
-                      <span className="text-sm">{coach.location}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Trophy className="w-4 h-4 mr-3 text-primary shrink-0" />
-                      <span className="text-sm">{coach.achievements}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="w-4 h-4 mr-3 text-primary shrink-0" />
-                      <span className="text-sm">
-                        {coach.players} atletas treinados
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-3 text-primary shrink-0" />
-                      <span className="text-sm">
-                        {coach.experience} de experiência
-                      </span>
-                    </div>
+                <div className="w-full text-left space-y-2 text-muted-foreground">
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-3 text-primary shrink-0" />
+                    <span className="text-sm">
+                      {coach.address
+                        ? `${coach.address.city}, ${coach.address.state}`
+                        : "Local não informado"}
+                    </span>
                   </div>
-                  <Link
-                    href={`/treinadores/${encodeURIComponent(coach.slug)}`}
-                    className="w-full"
-                  >
-                    <Button className="w-full bg-primary hover:bg-primary/90 shadow-lg mt-8 transform transition-transform duration-300 hover:scale-105">
-                      Entrar em contato
-                    </Button>
-                  </Link>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Link href="/treinadores">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground shadow-md"
-              >
-                Ver Todos os Treinadores
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </motion.div>
+                  <div className="flex items-center">
+                    <Trophy className="w-4 h-4 mr-3 text-primary shrink-0" />
+                    <span className="text-sm">
+                      {coach.coach?.certifications ||
+                        "Certificações não listadas"}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-3 text-primary shrink-0" />
+                    <span className="text-sm">
+                      {coach.coach?.coachedProfessionalAthletes || 0} atletas
+                      profissionais treinados
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-3 text-primary shrink-0" />
+                    <span className="text-sm">
+                      Desde{" "}
+                      {coach.coach?.careerStartDate
+                        ? new Date(
+                          coach.coach.careerStartDate
+                        ).getFullYear()
+                        : "N/A"}
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  href={`/treinadores/${generateSlug(coach.name || "")}`}
+                  className="w-full"
+                >
+                  <Button className="w-full bg-primary hover:bg-primary/90 shadow-lg mt-8 transform transition-transform duration-300 hover:scale-105">
+                    Ver Perfil
+                  </Button>
+                </Link>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       </MaxWidthWrapper>
 
@@ -300,7 +350,7 @@ export default function HomePage() {
         </AnimationContainer>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 w-full">
-          {PLAYERS.slice(0, 6).map((player, index) => (
+          {athletes.slice(0, 6).map((player, index) => (
             <motion.div
               key={player.id}
               initial={{ opacity: 0, y: 30 }}
@@ -311,17 +361,17 @@ export default function HomePage() {
               <Card className="flex flex-col items-center text-center p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-500 bg-card border-none">
                 <div className="relative mb-6">
                   <Image
-                    src={player.image || "/placeholder.svg"}
-                    alt={player.name}
+                    src={player.image || "/images/default-avatar.png"}
+                    alt={player.name || "Atleta"}
                     width={120}
                     height={120}
                     className="rounded-full object-cover border-4 border-primary/20 hover:border-primary transition-colors duration-300"
                   />
                   <Badge
-                    variant={getLevelVariant(player.level)}
+                    variant={getLevelVariant(player.athlete?.level ?? "")}
                     className="absolute bottom-0 right-0 shadow-md text-xs font-bold"
                   >
-                    {player.level}
+                    {player.athlete?.level || "N/A"}
                   </Badge>
                 </div>
 
@@ -329,53 +379,69 @@ export default function HomePage() {
                   {player.name}
                 </h3>
                 <p className="text-md text-primary font-semibold mb-4">
-                  {player.position}
+                  {player.athlete?.position || "Posição não definida"}
                 </p>
 
                 <div className="w-full text-left space-y-2 text-muted-foreground mb-6">
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-3 text-primary shrink-0" />
-                    <span className="text-sm">{player.location}</span>
+                    <span className="text-sm">
+                      {player.address
+                        ? `${player.address.city}, ${player.address.state}`
+                        : "Local não informado"}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-3 text-primary shrink-0" />
-                    <span className="text-sm">{player.age} anos</span>
+                    <span className="text-sm">
+                      {player.birthDate
+                        ? `${calculateAge(player.birthDate)} anos`
+                        : "Idade não informada"}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <span className="w-4 h-4 mr-3 flex items-center justify-center text-primary font-bold text-sm">
                       ↔
                     </span>
-                    <span className="text-sm">{player.height}</span>
+                    <span className="text-sm">
+                      {player.athlete?.height
+                        ? `${(player.athlete.height / 100).toFixed(2)}m`
+                        : "N/A"}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <span className="w-4 h-4 mr-3 flex items-center justify-center text-primary font-bold text-sm">
                       ⚖
                     </span>
-                    <span className="text-sm">{player.weight}</span>
+                    <span className="text-sm">
+                      {player.athlete?.weight
+                        ? `${player.athlete.weight}kg`
+                        : "N/A"}
+                    </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 w-full mb-6">
                   <div className="text-center p-4 bg-muted/50 rounded-xl transition-all duration-300 hover:bg-muted/80">
                     <div className="text-3xl font-bold text-foreground mb-1">
-                      {player.goals}
+                      {player.athlete?.goals || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Gols</div>
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-xl transition-all duration-300 hover:bg-muted/80">
                     <div className="text-3xl font-bold text-foreground mb-1">
-                      {player.matches}
+                      {player.athlete?.gamesPlayed || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Jogos</div>
                   </div>
                 </div>
 
                 <Link
-                  href={`/atletas/${encodeURIComponent(player.slug)}`}
+                  href={`/atletas/${generateSlug(player.name || "")}`}
                   className="w-full"
                 >
                   <Button className="w-full bg-primary hover:bg-primary/90 shadow-lg mt-8 transform transition-transform duration-300 hover:scale-105">
-                    Entrar em contato
+                    Ver Perfil
                   </Button>
                 </Link>
               </Card>
@@ -440,7 +506,6 @@ export default function HomePage() {
           </Accordion>
         </AnimationContainer>
       </MaxWidthWrapper>
-
       {/* CTA */}
       <MaxWidthWrapper>
         <div className="relative flex flex-col items-center justify-center w-full py-20">
