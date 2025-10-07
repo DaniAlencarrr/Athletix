@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, RefreshCw, Clock, Zap } from "lucide-react"
-import Image from "next/image"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, RefreshCw, Clock, Zap } from "lucide-react";
+import Image from "next/image";
 
 export function UnderDevelopment() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#6BA3E8] via-[#7DB8F0] to-[#5EC4A8]">
@@ -33,11 +33,16 @@ export function UnderDevelopment() {
           }`}
         >
           <div className="inline-flex items-center gap-3 rounded-full bg-white/20 px-6 py-3 backdrop-blur-md border border-white/30 shadow-lg">
-            <Badge variant="secondary" className="bg-white/90 text-[#6BA3E8] font-mono font-bold px-3 py-1">
+            <Badge
+              variant="secondary"
+              className="bg-white/90 text-[#6BA3E8] font-mono font-bold px-3 py-1"
+            >
               HTTP 501
             </Badge>
             <span className="h-1 w-1 rounded-full bg-white/60 animate-pulse" />
-            <span className="text-sm font-semibold text-white/90 tracking-wide">Not Implemented</span>
+            <span className="text-sm font-semibold text-white/90 tracking-wide">
+              Not Implemented
+            </span>
           </div>
 
           <div
@@ -54,7 +59,11 @@ export function UnderDevelopment() {
 
               {/* GIF with enhanced presentation */}
               <div className="relative z-10 h-full w-full rounded-2xl overflow-hidden bg-gradient-to-br from-white/10 to-transparent backdrop-blur-sm border border-white/20 shadow-2xl group-hover:scale-105 transition-transform duration-500">
-                <Image src="/funniest-unscreen.gif" alt="Em breve" fill className="object-cover"
+                <Image
+                  src="/funniest-unscreen.gif"
+                  alt="Em breve"
+                  fill
+                  className="object-cover"
                 />
               </div>
             </div>
@@ -69,8 +78,9 @@ export function UnderDevelopment() {
               Em Desenvolvimento
             </h1>
             <p className="mx-auto max-w-2xl text-pretty text-lg leading-relaxed text-white/90 md:text-xl font-medium drop-shadow-md">
-              Estamos trabalhando duro para trazer esta funcionalidade para você. Como um atleta em treinamento, estamos
-              nos preparando para entregar o melhor resultado.
+              Estamos trabalhando duro para trazer esta funcionalidade para
+              você. Como um atleta em treinamento, estamos nos preparando para
+              entregar o melhor resultado.
             </p>
           </div>
 
@@ -84,7 +94,9 @@ export function UnderDevelopment() {
                 <div className="absolute inset-0 animate-ping rounded-full bg-[#5EC4A8]" />
                 <div className="relative h-3 w-3 rounded-full bg-[#5EC4A8] shadow-lg shadow-[#5EC4A8]/50" />
               </div>
-              <span className="text-sm font-semibold text-white/95">Em construção</span>
+              <span className="text-sm font-semibold text-white/95">
+                Em construção
+              </span>
             </div>
 
             <div className="flex items-center gap-2 text-white/80">
@@ -149,7 +161,8 @@ export function UnderDevelopment() {
             }`}
           >
             <p className="text-sm text-white/70 font-medium">
-              Se você acredita que isso é um erro, entre em contato com o suporte
+              Se você acredita que isso é um erro, entre em contato com o
+              suporte
             </p>
           </div>
         </div>
@@ -157,5 +170,5 @@ export function UnderDevelopment() {
 
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
     </div>
-  )
+  );
 }
