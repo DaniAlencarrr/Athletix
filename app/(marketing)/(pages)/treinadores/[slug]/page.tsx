@@ -7,7 +7,6 @@ import MaxWidthWrapper from "@/components/global/max-width-wrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { COACHES } from "@/utils";
 import {
   ArrowLeft,
   ArrowRight,

@@ -1,12 +1,34 @@
+"use client";
+import { useSession } from "next-auth/react";
+import { CoachDashboard, AthleteDashboard } from "@/components/dashboard-views";
+
+
+
 export default function DashboardPage() {
+  const { data: session } = useSession();
+
+  if (!session) { 
+    return <div>Acesso Negado</div>;
+  }
+
+  const sessionUser = session?.user;
+
+  const isAthlete = sessionUser?.role === 'Atleta';
+  const isCoach = sessionUser?.role === 'Treinador';
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-      </div>
-      <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+      <h1 className="text-2xl font-bold">Olá, {sessionUser?.name}!</h1>
+      
+      {isAthlete && <AthleteDashboard />}
+      {isCoach && <CoachDashboard />}
+      
+      {!isAthlete && !isCoach && (
+        <div className="bg-muted/50 p-6 rounded-xl text-center">
+          <p className="text-lg">Bem-vindo(a) à Dashboard! Sua função é {sessionUser?.role}.</p>
+          <p className="text-sm text-muted-foreground">Conteúdo para {sessionUser?.role} será implementado aqui.</p>
+        </div>
+      )}
     </div>
   );
 }

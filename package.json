@@ -12,7 +12,7 @@
     "db:push": "dotenv -e .env.local -- npx prisma db push",
     "db:studio": "dotenv -e .env.local -- npx prisma studio",
     "db:seed": "npx tsx scripts/seed.ts",
-   "db:insert-seed": "npx tsx prisma/insert-seed.ts",
+    "db:insert-seed": "npx tsx prisma/insert-seed.ts",
     "db:reset": "npx tsx scripts/reset-db.ts"
   },
   "dependencies": {
@@ -44,6 +44,7 @@
     "react-aria-components": "^1.12.1",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
+    "recharts": "^3.2.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.0.15"
